@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- One position-mode arm servo. offset = pi puts joint zero at servo tick 2048, the middle of
+       the range, matching the "new calibration" URDF. lower/upper must equal the URDF <limit>s
+       in so101_arm.xacro. -->
+  <!-- TODO: confirm offset and direction (inverted) for each joint on hardware -->
+  <xacro:macro name="so101_ros2_joint" params="name id lower upper offset:=${pi} inverted:=false">
+    <joint name="${name}">
+      <param name="id">${id}</param>
+      <param name="type">pos</param>
+      <param name="offset">${offset}</param>
+      <param name="inverted">${inverted}</param>
+      <command_interface name="position">
+        <param name="min">${lower}</param>
+        <param name="max">${upper}</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+      <state_interface name="temperature"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- The arm's joints only, for use inside any <ros2_control> block. A combined robot that
+       shares the servo bus calls this inside its own single <hardware> block. -->
+  <xacro:macro name="so101_arm_ros2_joints" params="prefix:=''">
+    <xacro:so101_ros2_joint name="${prefix}shoulder_pan" id="1" lower="-1.91986" upper="1.91986"/>
+    <xacro:so101_ros2_joint name="${prefix}shoulder_lift" id="2" lower="-1.74533" upper="1.74533"/>
+    <xacro:so101_ros2_joint name="${prefix}elbow_flex" id="3" lower="-1.69" upper="1.69"/>
+    <xacro:so101_ros2_joint name="${prefix}wrist_flex" id="4" lower="-1.65806" upper="1.65806"/>
+    <xacro:so101_ros2_joint name="${prefix}wrist_roll" id="5" lower="-2.74385" upper="2.84121"/>
+    <xacro:so101_ros2_joint name="${prefix}gripper" id="6" lower="-0.174533" upper="1.74533"/>
+  </xacro:macro>
+
+  <!-- A standalone ros2_control system for the arm on its own bus -->
+  <xacro:macro name="so101_arm_ros2_control"
+               params="name:=so101 prefix:='' port:=/dev/ttyACM0 baudrate:=1000000 use_mock_hardware:=false">
+
+    <!-- true/false/1/0 in any case; anything else aborts the render -->
+    <xacro:property name="mock"
+        value="${['false', '0', 'true', '1'].index(str(use_mock_hardware).strip().lower()) >= 2}"/>
+
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <xacro:if value="${mock}">
+          <plugin>mock_components/GenericSystem</plugin>
+        </xacro:if>
+        <xacro:unless value="${mock}">
+          <plugin>waveshare_servos/WaveshareServos</plugin>
+          <param name="port">${port}</param>
+          <param name="baudrate">${baudrate}</param>
+        </xacro:unless>
+      </hardware>
+
+      <xacro:so101_arm_ros2_joints prefix="${prefix}"/>
+    </ros2_control>
+
+  </xacro:macro>
+
+</robot>

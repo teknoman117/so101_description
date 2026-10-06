@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="so101">
+
+  <!-- Standalone SO-101 arm -->
+  <xacro:arg name="port" default="/dev/ttyACM0"/>
+  <xacro:arg name="use_mock_hardware" default="false"/>
+
+  <xacro:include filename="$(find so101_description)/urdf/so101_arm.xacro" />
+  <xacro:include filename="$(find so101_description)/urdf/so101.ros2_control.xacro" />
+
+  <xacro:so101_arm>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:so101_arm>
+
+  <xacro:so101_arm_ros2_control port="$(arg port)" use_mock_hardware="$(arg use_mock_hardware)"/>
+
+</robot>
