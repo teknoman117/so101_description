@@ -308,6 +308,14 @@
       <parent link="${prefix}gripper_link"/>
       <child link="${prefix}gripper_frame_link"/>
     </joint>
+    <!-- Fingertips: the ends of the jaws, 6.3 mm beyond gripper_frame_link along its +z (the
+         direction the jaws point). Not in the upstream URDF. -->
+    <link name="${prefix}gripper_tip_link"/>
+    <joint name="${prefix}gripper_tip_joint" type="fixed">
+      <origin xyz="0 0 0.0063" rpy="0 0 0"/>
+      <parent link="${prefix}gripper_frame_link"/>
+      <child link="${prefix}gripper_tip_link"/>
+    </joint>
     <!-- Link moving_jaw_so101_v1 -->
     <link name="${prefix}moving_jaw_so101_v1_link">
       <inertial>

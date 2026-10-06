@@ -32,6 +32,13 @@ arm_controller:
 
     allow_partial_joints_goal: true
 
+    # Start each new trajectory from the last commanded state, not the measured one. The marker
+    # follower (lekiwi_teleop arm_marker) replaces its trajectory every cycle; starting each from
+    # the measured state, which lags behind on real servos, makes the motion stutter. On
+    # activation the controller starts from the hardware's command values, which waveshare_servos
+    # seeds with the measured positions.
+    interpolate_from_desired_state: true
+
 gripper_controller:
   ros__parameters:
     joint: gripper
